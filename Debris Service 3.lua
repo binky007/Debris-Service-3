@@ -48,6 +48,12 @@ function Debris3:AddItems(Parts, Lifetimes)
 	
 end
 
+function Debris3:CancelItem(Item)
+	if Items[Item] then
+		Items[Item] = nil
+	end
+end
+
 function Debris3:GetAllDebris()
 	return Items
 end
