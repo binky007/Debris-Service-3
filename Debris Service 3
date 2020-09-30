@@ -1,4 +1,3 @@
-```lua
 local RunService = game:GetService("RunService")
 
 local Items = {}
@@ -68,4 +67,3 @@ RunService.Heartbeat:Connect(function()
 end)
 
 return Debris3
-```
