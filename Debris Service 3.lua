@@ -1,4 +1,5 @@
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
 local Items = {}
 
@@ -8,11 +9,30 @@ local Types = {
 	["RBXScriptConnection"] = "Disconnect",
 }
 
+local function MoreAccurateWait(Value) -- More accurate due to normal wait being limited to 30hZ whilst this one is at 60hz
+	Value = Value or 1/60
+	local Start = os.clock()
+	while os.clock() - Start < Value do
+		RunService.Stepped:Wait()
+	end
+end
+
 local function RemoveItem(Part)
 	local Info = Items[Part]
-	
+
 	if Info[4] == "Instance" then
-		Part:Destroy()
+		if Info[5] then
+			print(Info[5].Goals)
+			print(Info[5])
+			local Tween = TweenService:Create(Part, Info[5].Tweeninfo, Info[5].Goals)
+			Tween:Play()
+			coroutine.resume(coroutine.create(function()
+				MoreAccurateWait(Info[5].Duration)
+				Part:Destroy()
+			end))
+		else
+			Part:Destroy()
+		end
 	elseif Info[4] == "RBXScriptConnection" then
 		Info[1]:Disconnect()
 	else
@@ -21,31 +41,31 @@ local function RemoveItem(Part)
 		end
 		Info[Part] = nil
 	end
-	
+
 	Items[Part] = nil
 end
 
-local function AddItem(Part, Lifetime)
-	local Type = typeof(Part)
-	
+local function AddItem(Part, Lifetime,Info) --  Info is like this {Duration = 1, Tweeninfo = TweenInfo.new(Duration,EasingStyle, EasingDirecton), Goals = {CFrame = CFrame.new(0,-5,0)}
+	local Type = typeof(Part) --                                                 Case sensitive
+
 	assert(Types[Type])
 	assert(typeof(Lifetime) == "number")
-	
-	Items[Part] = {Part, Lifetime, tick(), Type}
+	Info = Info or false
+	Items[Part] = {Part, Lifetime, os.clock(), Type, Info}
 end
 
 local Debris3 = {}
 
-function Debris3:AddItem(Part, Lifetime)
-	AddItem(Part, Lifetime)
+function Debris3:AddItem(Part, Lifetime, Info)
+	AddItem(Part, Lifetime, Info)
 end
 
-function Debris3:AddItems(Parts, Lifetimes)
-	
+function Debris3:AddItems(Parts, Lifetimes, Info)
+
 	for i, Item in ipairs(Parts) do
-		AddItem(Item, Lifetimes[i])
+		AddItem(Item, Lifetimes[i], Info)
 	end
-	
+
 end
 
 function Debris3:CancelItem(Item)
@@ -64,11 +84,11 @@ end
 
 RunService.Heartbeat:Connect(function()
 	for Part, Info in next, Items do
-		
-		if tick() -(Info[3] + Info[2]) > 0 then
+
+		if os.clock() -(Info[3] + Info[2]) > 0 then
 			RemoveItem(Part)
 		end
-		
+
 	end
 end)
 
