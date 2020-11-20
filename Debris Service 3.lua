@@ -22,8 +22,6 @@ local function RemoveItem(Part)
 
 	if Info[4] == "Instance" then
 		if Info[5] then
-			print(Info[5].Goals)
-			print(Info[5])
 			local Tween = TweenService:Create(Part, Info[5].Tweeninfo, Info[5].Goals)
 			Tween:Play()
 			coroutine.resume(coroutine.create(function()
