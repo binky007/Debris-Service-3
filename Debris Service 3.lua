@@ -36,10 +36,7 @@ local function RemoveItem(Part)
 	elseif Info[4] == "RBXScriptConnection" then
 		Info[1]:Disconnect()
 	else
-		for i, Data in ipairs(Part[1]) do
-			table.remove(Part[1], i)
-		end
-		Info[Part] = nil
+		table.clear(Part[1])
 	end
 
 	Items[Part] = nil
